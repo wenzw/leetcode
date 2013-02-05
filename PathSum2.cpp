@@ -15,32 +15,44 @@ public:
         vector<vector<int> > vvi;
         if (root == NULL) return vvi;
         vector<TreeNode*> v;
+        map<TreeNode*, int> m;
         v.push_back(root);
+        m[root] = 0;
         int cursum = root -> val;
-        while (root -> left != NULL) {
-            v.push_back(root -> left);
-            cursum += root -> left -> val;
-            root = root -> left;
-        }
         while (!v.empty()) {
             TreeNode* p = v.back();
-            if (p -> right == NULL) {
-                // is leaf
-                if (cursum == sum) {
-                    vvi.push_back(buildResult(v));
+            if (m[p] == 0) {
+                if (p -> left != NULL) {
+                    v.push_back(p -> left);
+                    cursum += p -> left -> val;
+                    m[p -> left] = 0;
                 }
+                m[p]++;
+            } else if (m[p] == 1) {
+                if (p -> right != NULL) {
+                    v.push_back(p -> right);
+                    cursum += p -> right -> val;
+                    m[p -> right] = 0;
+                } else {
+                    // is leaf
+                    if (p -> left == NULL && cursum == sum) {
+                        vvi.push_back(buildResult(v));
+                    }
+                }
+                m[p]++;
+            } else if (m[p] == 2) {
+                cursum -= p -> val;
                 v.pop_back();
-            } else {
-                while (p -> 
             }
         }
+        return vvi;
     }
     vector<int> buildResult(vector<TreeNode*> v) {
-        vector<int> v;
+        vector<int> vi;
         vector<TreeNode*>::iterator it = v.begin();
         for (; it != v.end(); it++) {
-            v.push_back(*it -> val);
+            vi.push_back((*it) -> val);
         }
-        return v;
+        return vi;
     }
 };
