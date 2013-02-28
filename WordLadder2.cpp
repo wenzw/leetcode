@@ -4,22 +4,22 @@
 
 class Solution {
     struct Mark {
-        int graphIndex;
+        string orgs;
         int vecIndex;
     };
 public:
     vector<vector<string>> findLadders(string start, string end, unordered_set<string> &dict) {
         // Start typing your C/C++ solution below
-        // DO NOT write int main() function  
+        // DO NOT write int main() function
         vector<vector<string> > r;
         int len = start.length();
         if (len <= 0) return r;
         if (dict.empty()) return r;
-        unordered_map<string, int> search;
+        unordered_map<string, bool> searched;
         unordered_map<string, vector<string> >* graph = new unordered_map<string, vector<string> >[len];
         for (auto it = dict.begin(); it != dict.end(); it++) {
             string s = *it;
-            search[s] = MAX;
+            searched[s] = false;
             for (int i = 0; i < len; i++) {
                 string tmps = s;
                 tmps[i] = '*';
@@ -32,76 +32,92 @@ public:
                 }
             }
         }
-        search[start] = 1;
+        unordered_map<string, vector<string> > links;
+        for (auto it = dict.begin(); it != dict.end(); it++) {
+            vector<string> tmps;
+            links[*it] = tmps;
+        }
+        for (auto it = dict.begin(); it != dict.end(); it++) {
+            for (int i = 0; i < len; i++) {
+                string tmps = *it;
+                tmps[i] = '*';
+                auto ittmp = (*graph[i].find(tmps)).second;
+                unordered_set<string> tmpset;
+                for (auto ittmpv = ittmp.begin(); ittmpv != ittmp.end(); ittmpv++) {
+                    if (*ittmpv != *it) {
+                        tmpset.insert(*ittmpv);
+                    }   
+                    //links[*it].push_back(*ittmpv);
+                }   
+                for (auto ittmps = tmpset.begin(); ittmps != tmpset.end(); ittmps++) {
+                    links[*it].push_back(*ittmps);
+                }   
+            }   
+        }
+        searched[start] = true;
+        for (int i = 0; i < len; i++) {
+            graph[i].clear();
+        }
+        delete[] graph;
+        
+        //
+
 
         vector<Mark> vm;
         Mark mark0;
-        mark0.graphIndex = -1;
+        mark0.orgs = start;
+        mark0.vecIndex = -1;
         vm.push_back(mark0);
         int minTrans = MAX;
         int index = 0;
         while (index >= 0) {
-            // choose the next node
-            if (vm[index].graphIndex == -1) {
-                vm[index].graphIndex = 0;
-                string tmps;
-                if (index == 0) {
-                    tmps = start;
-                } else {
-                    tmps = *(vm[index-1].it);
-                }
-                tmps[0] = '*';
-                vm[index].it = (graph[0].find(tmps)->second).begin();
-            } else {
-                vm[index].it++;
-                string parent;
-                string tmps;
-                if (index == 0) {
-                    parent = start;
-                    tmps = start;
-                } else {
-                    tmps = *(vm[index-1].it);
-                    parent = tmps;
-                }
-                tmps[vm[index].graphIndex] = '*';
-                if (vm[index].it == (graph[vm[index].graphIndex].find(tmps)->second).end()) {
-                    vm[index].graphIndex++;
-                    if (vm[index].graphIndex >= len) {
-                        vm[index].graphIndex = -1;
-                        index--;
-                        continue;
-                    }
-                    tmps = parent;
-                    tmps[vm[index].graphIndex] = '*';
-                    vm[index].it = (graph[vm[index].graphIndex].find(tmps)->second).begin();
-                }
-            }
-            if ((*(vm[index].it)) == end) {
-                if (index <= minTrans) {
-                    if (index < minTrans) {
-                        r.clear();
-                    }
-                    minTrans = index;
-                    vector<string> tmpvs;
-                    tmpvs.push_back(start);
-                    for (int i = 0; i <= index; i++) {
-                        tmpvs.push_back(*(vm[i].it));
-                    }
-                    r.clear();
-                    r.push_back(tmpvs);
-                }
-                vm[index].graphIndex = -1;
+            int i = ++vm[index].vecIndex;
+            //if (i >= 0) {
+            //    searched[links[vm[index].orgs][i]] = false;
+            //}
+            //i = ++vm[index].vecIndex;
+            if (i >= links[vm[index].orgs].size()) {
                 index--;
                 continue;
             }
-            index++;
-            if (index >= vm.size()) {
-                Mark tmpm;
-                tmpm.graphIndex = -1;
-                vm.push_back(tmpm);
+            string curs = links[vm[index].orgs][i];
+                        int k = 0;
+            for (k = 0; k <= index; k++) {
+                if (curs == vm[k].orgs) {
+                    break;
+                }   
+            }   
+            if (k <= index) {
+                continue;
             }
+            if (curs == end) {
+                if (minTrans > index) {
+                    r.clear();
+                    vector<string> vnew;
+                    for (int j = 0; j <= index; j++) {
+                        vnew.push_back(vm[j].orgs);
+                    }
+                    vnew.push_back(end);
+                    r.push_back(vnew);
+                } else if (minTrans == index) {
+                    vector<string> vnew;
+                    for (int j = 0; j <= index; j++) {
+                        vnew.push_back(vm[j].orgs);
+                    }
+                    vnew.push_back(end);
+                    r.push_back(vnew);
+                }
+                searched[curs] = false;
+                index--;
+                continue;
+            }
+            Mark mark;
+            mark.orgs = curs;
+            mark.vecIndex = -1;
+            vm.push_back(mark);
+            searched[curs] = true;
+            index++;
         }
-        
         return r;
     }
 };
