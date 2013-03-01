@@ -1,6 +1,13 @@
+#include <cstdlib>
+#include <iostream>
+#include <vector>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #define MAX 0x7FFFFFFF
+
+using namespace std;
 
 class Solution {
     struct Mark {
@@ -46,13 +53,13 @@ public:
                 for (auto ittmpv = ittmp.begin(); ittmpv != ittmp.end(); ittmpv++) {
                     if (*ittmpv != *it) {
                         tmpset.insert(*ittmpv);
-                    }   
+                    }
                     //links[*it].push_back(*ittmpv);
-                }   
+                }
                 for (auto ittmps = tmpset.begin(); ittmps != tmpset.end(); ittmps++) {
                     links[*it].push_back(*ittmps);
-                }   
-            }   
+                }
+            }
         }
         searched[start] = true;
         for (int i = 0; i < len; i++) {
@@ -61,7 +68,13 @@ public:
         delete[] graph;
         
         //
-
+        for (auto it = links.begin(); it != links.end(); it++) {
+            cout << it -> first << " : ";
+            for (auto itt = (it -> second).begin(); itt != (it -> second).end(); itt++) {
+                cout << *itt << " ";
+            }
+            cout << endl;
+        }
 
         vector<Mark> vm;
         Mark mark0;
@@ -71,22 +84,23 @@ public:
         int minTrans = MAX;
         int index = 0;
         while (index >= 0) {
-            int i = ++vm[index].vecIndex;
-            //if (i >= 0) {
-            //    searched[links[vm[index].orgs][i]] = false;
-            //}
-            //i = ++vm[index].vecIndex;
+            vm[index].vecIndex++;
+            int i = vm[index].vecIndex;
             if (i >= links[vm[index].orgs].size()) {
                 index--;
+                vm.pop_back();
                 continue;
             }
             string curs = links[vm[index].orgs][i];
-                        int k = 0;
+            if (curs == start) {
+                continue;
+            }
+            int k = 0;
             for (k = 0; k <= index; k++) {
                 if (curs == vm[k].orgs) {
                     break;
-                }   
-            }   
+                }
+            }
             if (k <= index) {
                 continue;
             }
@@ -99,6 +113,7 @@ public:
                     }
                     vnew.push_back(end);
                     r.push_back(vnew);
+                    minTrans = index;
                 } else if (minTrans == index) {
                     vector<string> vnew;
                     for (int j = 0; j <= index; j++) {
@@ -109,6 +124,7 @@ public:
                 }
                 searched[curs] = false;
                 index--;
+                vm.pop_back();
                 continue;
             }
             Mark mark;
